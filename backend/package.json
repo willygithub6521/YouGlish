@@ -12,8 +12,16 @@
     "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts --fix",
     "clean": "rm -rf dist node_modules",
-    "db:migrate": "tsx src/scripts/migrate.ts",
-    "db:seed": "tsx src/scripts/seed.ts"
+    "db:migrate": "tsx src/database/migrate.ts migrate",
+    "db:migrate:status": "tsx src/database/migrate.ts status",
+    "db:seed": "tsx src/database/seed.ts seed",
+    "db:seed:clear": "tsx src/database/seed.ts clear",
+    "db:seed:reset": "tsx src/database/seed.ts reset",
+    "es:setup": "tsx src/elasticsearch/cli.ts setup",
+    "es:health": "tsx src/elasticsearch/cli.ts health",
+    "es:status": "tsx src/elasticsearch/cli.ts status",
+    "es:reset": "tsx src/elasticsearch/cli.ts reset",
+    "es:test": "tsx src/elasticsearch/cli.ts test"
   },
   "dependencies": {
     "express": "^4.18.2",
