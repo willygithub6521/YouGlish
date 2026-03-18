@@ -1,45 +1,47 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import { CacheService } from './CacheService.js';
 
 // Mock dependencies
-vi.mock('../connections/index.js', () => ({
-  getRedisConnection: vi.fn(() => mockRedisConnection)
+jest.mock('../connections/index.js', () => ({
+  getRedisConnection: jest.fn(() => mockRedisConnection)
 }));
 
-vi.mock('../redis/cacheService.js', () => ({
-  CacheService: vi.fn(() => mockRedisCacheService)
+jest.mock('../redis/cacheService.js', () => ({
+  CacheService: jest.fn(() => mockRedisCacheService)
 }));
 
-vi.mock('../utils/logger.js', () => ({
-  createLogger: vi.fn(() => ({
-    debug: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn()
+jest.mock('../utils/logger.js', () => ({
+  createLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn()
   }))
 }));
 
 // Mock objects
-const mockRedisConnection = {};
+const mockRedisConnection = {
+  getConnection: jest.fn().mockReturnValue({})
+};
 
 const mockRedisCacheService = {
-  get: vi.fn(),
-  set: vi.fn(),
-  delete: vi.fn(),
-  invalidate: vi.fn(),
-  exists: vi.fn(),
-  mget: vi.fn(),
-  mset: vi.fn(),
-  increment: vi.fn(),
-  expire: vi.fn(),
-  ttl: vi.fn()
+  get: jest.fn(),
+  set: jest.fn(),
+  delete: jest.fn(),
+  invalidate: jest.fn(),
+  exists: jest.fn(),
+  mget: jest.fn(),
+  mset: jest.fn(),
+  increment: jest.fn(),
+  expire: jest.fn(),
+  ttl: jest.fn()
 };
 
 describe('CacheService', () => {
   let cacheService: CacheService;
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
     cacheService = new CacheService({
       defaultTTL: 3600,
       keyPrefix: 'test:'
@@ -47,7 +49,7 @@ describe('CacheService', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    jest.restoreAllMocks();
   });
 
   describe('get', () => {

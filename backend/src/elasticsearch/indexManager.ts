@@ -1,11 +1,11 @@
 import { Client } from '@elastic/elasticsearch';
-import ElasticsearchConnection from './config';
+import ElasticsearchConnection from './config.js';
 import { 
   subtitlesIndexMapping, 
   subtitlesIndexTemplate, 
   indexLifecyclePolicy,
   SubtitleDocument 
-} from './mappings';
+} from './mappings.js';
 
 /**
  * Elasticsearch Index Manager

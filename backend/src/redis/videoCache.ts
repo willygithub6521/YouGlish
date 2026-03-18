@@ -113,7 +113,7 @@ export class VideoCache {
         value: subtitles,
         ttl: TTL_POLICIES.VIDEO_SUBTITLES,
       },
-    ]);
+    ] as { key: string; value: any; ttl?: number }[]);
 
     await this.cacheService.mset(cacheEntries);
   }

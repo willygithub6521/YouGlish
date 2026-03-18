@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+
 import { VideoModel, VideoMetadata, CreateVideoData, UpdateVideoData } from '../database/models/Video.js';
 import { SubtitleModel, Subtitle, CreateSubtitleData } from '../database/models/Subtitle.js';
 import { ElasticsearchSearchService } from '../elasticsearch/searchService.js';
@@ -45,8 +45,8 @@ export class VideoService {
     this.subtitleModel = new SubtitleModel(pool);
     this.searchService = new ElasticsearchSearchService();
     
-    const redisConnection = getRedisConnection();
-    this.cacheService = new CacheService(redisConnection);
+    const redisClient = getRedisConnection();
+    this.cacheService = new CacheService(redisClient.getConnection());
   }
 
   /**
@@ -75,8 +75,9 @@ export class VideoService {
       }
 
       return video;
-    } catch (error) {
-      logger.error(`Error getting video metadata for ${videoId}:`, error);
+    } catch (err: unknown) {
+      const error = err as Error;
+      logger.error(`Error getting video metadata for ${videoId}:`, error.message);
       throw new Error(`Failed to get video metadata: ${error.message}`);
     }
   }
@@ -107,8 +108,9 @@ export class VideoService {
       }
 
       return subtitles;
-    } catch (error) {
-      logger.error(`Error getting subtitles for ${videoId}:`, error);
+    } catch (err: unknown) {
+      const error = err as Error;
+      logger.error(`Error getting subtitles for ${videoId}:`, error.message);
       throw new Error(`Failed to get subtitles: ${error.message}`);
     }
   }
@@ -127,8 +129,9 @@ export class VideoService {
 
       logger.info(`Created video ${video.id}: ${video.title}`);
       return video;
-    } catch (error) {
-      logger.error(`Error creating video ${videoData.id}:`, error);
+    } catch (err: unknown) {
+      const error = err as Error;
+      logger.error(`Error creating video ${videoData.id}:`, error.message);
       throw new Error(`Failed to create video: ${error.message}`);
     }
   }
@@ -150,8 +153,9 @@ export class VideoService {
       }
 
       return video;
-    } catch (error) {
-      logger.error(`Error updating video ${videoId}:`, error);
+    } catch (err: unknown) {
+      const error = err as Error;
+      logger.error(`Error updating video ${videoId}:`, error.message);
       throw new Error(`Failed to update video: ${error.message}`);
     }
   }
@@ -180,8 +184,9 @@ export class VideoService {
       }
 
       return deleted;
-    } catch (error) {
-      logger.error(`Error deleting video ${videoId}:`, error);
+    } catch (err: unknown) {
+      const error = err as Error;
+      logger.error(`Error deleting video ${videoId}:`, error.message);
       throw new Error(`Failed to delete video: ${error.message}`);
     }
   }
@@ -203,7 +208,7 @@ export class VideoService {
       // Index subtitles for search
       for (const subtitle of createdSubtitles) {
         const searchDoc = {
-          subtitle_id: subtitle.id.toString(),
+          subtitle_id: subtitle.id,
           video_id: subtitle.videoId,
           text: subtitle.text,
           start_time: subtitle.startTime,
@@ -221,8 +226,9 @@ export class VideoService {
 
       logger.info(`Added ${createdSubtitles.length} subtitles for video ${videoId}`);
       return createdSubtitles;
-    } catch (error) {
-      logger.error(`Error adding subtitles for video ${videoId}:`, error);
+    } catch (err: unknown) {
+      const error = err as Error;
+      logger.error(`Error adding subtitles for video ${videoId}:`, error.message);
       throw new Error(`Failed to add subtitles: ${error.message}`);
     }
   }
@@ -233,8 +239,9 @@ export class VideoService {
   async getVideosByAccent(accent: Accent, limit = 20, offset = 0): Promise<VideoMetadata[]> {
     try {
       return await this.videoModel.findByAccent(accent, limit, offset);
-    } catch (error) {
-      logger.error(`Error getting videos by accent ${accent}:`, error);
+    } catch (err: unknown) {
+      const error = err as Error;
+      logger.error(`Error getting videos by accent ${accent}:`, error.message);
       throw new Error(`Failed to get videos by accent: ${error.message}`);
     }
   }
@@ -265,8 +272,9 @@ export class VideoService {
       }
 
       return counts;
-    } catch (error) {
-      logger.error('Error getting accent counts:', error);
+    } catch (err: unknown) {
+      const error = err as Error;
+      logger.error('Error getting accent counts:', error.message);
       throw new Error(`Failed to get accent counts: ${error.message}`);
     }
   }
@@ -277,8 +285,9 @@ export class VideoService {
   async videoExists(videoId: string): Promise<boolean> {
     try {
       return await this.videoModel.exists(videoId);
-    } catch (error) {
-      logger.error(`Error checking if video ${videoId} exists:`, error);
+    } catch (err: unknown) {
+      const error = err as Error;
+      logger.error(`Error checking if video ${videoId} exists:`, error.message);
       return false;
     }
   }
@@ -293,8 +302,9 @@ export class VideoService {
   }> {
     try {
       return await this.subtitleModel.findWithContext(subtitleId);
-    } catch (error) {
-      logger.error(`Error getting subtitle context for ${subtitleId}:`, error);
+    } catch (err: unknown) {
+      const error = err as Error;
+      logger.error(`Error getting subtitle context for ${subtitleId}:`, error.message);
       throw new Error(`Failed to get subtitle context: ${error.message}`);
     }
   }
@@ -305,8 +315,9 @@ export class VideoService {
   async getSubtitleAtTime(videoId: string, time: number): Promise<Subtitle | null> {
     try {
       return await this.subtitleModel.findAtTime(videoId, time);
-    } catch (error) {
-      logger.error(`Error getting subtitle at time ${time} for video ${videoId}:`, error);
+    } catch (err: unknown) {
+      const error = err as Error;
+      logger.error(`Error getting subtitle at time ${time} for video ${videoId}:`, error.message);
       throw new Error(`Failed to get subtitle at time: ${error.message}`);
     }
   }
@@ -325,8 +336,9 @@ export class VideoService {
       ]);
 
       return { videos, total };
-    } catch (error) {
-      logger.error('Error getting all videos:', error);
+    } catch (err: unknown) {
+      const error = err as Error;
+      logger.error('Error getting all videos:', error.message);
       throw new Error(`Failed to get videos: ${error.message}`);
     }
   }
@@ -341,8 +353,9 @@ export class VideoService {
         this.cacheService.delete('video:accent:counts')
       ]);
       logger.debug(`Cache invalidated for video ${videoId}`);
-    } catch (error) {
-      logger.warn(`Failed to invalidate cache for video ${videoId}:`, error);
+    } catch (err: unknown) {
+      const error = err as Error;
+      logger.warn(`Failed to invalidate cache for video ${videoId}:`, error.message);
     }
   }
 
@@ -366,8 +379,9 @@ export class VideoService {
         cache: cacheHealth,
         search: searchHealth
       };
-    } catch (error) {
-      logger.error('Error checking service health:', error);
+    } catch (err: unknown) {
+      const error = err as Error;
+      logger.error('Error checking service health:', error.message);
       return {
         database: false,
         cache: false,

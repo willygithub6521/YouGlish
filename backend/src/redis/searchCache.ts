@@ -142,7 +142,7 @@ export class SearchCache {
     try {
       // This is a simplified implementation
       // In production, you might want to use Redis SCAN for better performance
-      const searchKeys = await this.cacheService.mget([
+      const _searchKeys = await this.cacheService.mget([
         CacheKeys.patterns.allSearchResults(),
         CacheKeys.patterns.allSuggestions(),
       ]);

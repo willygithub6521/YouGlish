@@ -2,68 +2,96 @@
  * Elasticsearch configuration tests
  */
 
-import { ElasticsearchIndexManager } from './indexManager';
-import { ElasticsearchSearchService } from './searchService';
-import { checkElasticsearchHealth, initializeElasticsearch } from './index';
+import { ElasticsearchIndexManager } from './indexManager.js';
+import { ElasticsearchSearchService } from './searchService.js';
+import { checkElasticsearchHealth, initializeElasticsearch } from './index.js';
 
-// Mock Elasticsearch client for testing
-jest.mock('@elastic/elasticsearch', () => ({
-  Client: jest.fn().mockImplementation(() => ({
-    ping: jest.fn().mockResolvedValue({ statusCode: 200 }),
-    indices: {
-      exists: jest.fn().mockResolvedValue({ statusCode: 200 }),
-      create: jest.fn().mockResolvedValue({ statusCode: 200 }),
-      delete: jest.fn().mockResolvedValue({ statusCode: 200 }),
-      getSettings: jest.fn().mockResolvedValue({ body: {} }),
-      getMapping: jest.fn().mockResolvedValue({ body: {} }),
-      stats: jest.fn().mockResolvedValue({ body: { indices: {} } }),
-      refresh: jest.fn().mockResolvedValue({ statusCode: 200 }),
-      putSettings: jest.fn().mockResolvedValue({ statusCode: 200 }),
-      putIndexTemplate: jest.fn().mockResolvedValue({ statusCode: 200 }),
-      existsIndexTemplate: jest.fn().mockResolvedValue({ statusCode: 200 })
-    },
-    cluster: {
-      health: jest.fn().mockResolvedValue({ 
-        body: { 
+// Mock the config module
+jest.mock('./config.js', () => {
+  return {
+    __esModule: true,
+    default: {
+      getInstance: jest.fn().mockReturnValue({
+        getClient: jest.fn().mockReturnValue({
+          ping: jest.fn().mockResolvedValue(true),
+          indices: {
+            exists: jest.fn().mockResolvedValue({ statusCode: 200 }),
+            create: jest.fn().mockResolvedValue({ statusCode: 200 }),
+            delete: jest.fn().mockResolvedValue({ statusCode: 200 }),
+            getSettings: jest.fn().mockResolvedValue({ body: {} }),
+            getMapping: jest.fn().mockResolvedValue({ body: {} }),
+            stats: jest.fn().mockResolvedValue({ body: { indices: {} } }),
+            refresh: jest.fn().mockResolvedValue({ statusCode: 200 }),
+            putSettings: jest.fn().mockResolvedValue({ statusCode: 200 }),
+            putIndexTemplate: jest.fn().mockResolvedValue({ statusCode: 200 }),
+            existsIndexTemplate: jest.fn().mockResolvedValue({ statusCode: 200 })
+          },
+          ilm: {
+            putLifecycle: jest.fn().mockResolvedValue({ statusCode: 200 })
+          },
+          search: jest.fn().mockResolvedValue({
+            body: {
+              hits: {
+                total: { value: 0 },
+                hits: []
+              },
+              took: 5,
+              aggregations: {
+                accent_counts: {
+                  buckets: []
+                },
+                unique_videos: {
+                  value: 0
+                },
+                avg_duration: {
+                  value: 0
+                }
+              }
+            }
+          }),
+          index: jest.fn().mockResolvedValue({ statusCode: 201 }),
+          bulk: jest.fn().mockResolvedValue({ 
+            body: { 
+              errors: false,
+              items: []
+            } 
+          }),
+          deleteByQuery: jest.fn().mockResolvedValue({ 
+            body: { 
+              deleted: 0 
+            } 
+          }),
+          close: jest.fn().mockResolvedValue(undefined)
+        }),
+        getConfig: jest.fn().mockReturnValue({
+          indexPrefix: 'youtube_pronunciation'
+        }),
+        testConnection: jest.fn().mockResolvedValue(true),
+        getClusterHealth: jest.fn().mockResolvedValue({ 
           status: 'green',
           number_of_nodes: 1,
           number_of_data_nodes: 1,
           active_shards: 3
-        } 
+        }),
+        close: jest.fn().mockResolvedValue(undefined)
       })
     },
-    ilm: {
-      putLifecycle: jest.fn().mockResolvedValue({ statusCode: 200 })
-    },
-    search: jest.fn().mockResolvedValue({
-      body: {
-        hits: {
-          total: { value: 0 },
-          hits: []
-        },
-        took: 5,
-        aggregations: {
-          accent_counts: {
-            buckets: []
-          }
-        }
-      }
+    getElasticsearchConfig: jest.fn().mockReturnValue({
+      url: 'http://localhost:9200',
+      indexPrefix: 'youtube_pronunciation',
+      maxRetries: 3,
+      requestTimeout: 30000
     }),
-    index: jest.fn().mockResolvedValue({ statusCode: 201 }),
-    bulk: jest.fn().mockResolvedValue({ 
-      body: { 
-        errors: false,
-        items: []
-      } 
-    }),
-    deleteByQuery: jest.fn().mockResolvedValue({ 
-      body: { 
-        deleted: 0 
-      } 
-    }),
-    close: jest.fn().mockResolvedValue(undefined)
-  }))
-}));
+    createElasticsearchClient: jest.fn(),
+    ElasticsearchConnection: {
+      getInstance: jest.fn().mockReturnValue({
+        testConnection: jest.fn().mockResolvedValue(true)
+      })
+    }
+  };
+});
+
+
 
 describe('Elasticsearch Configuration', () => {
   let indexManager: ElasticsearchIndexManager;
@@ -195,11 +223,13 @@ describe('Elasticsearch Configuration', () => {
   describe('Health and Initialization', () => {
     test('should check Elasticsearch health', async () => {
       const health = await checkElasticsearchHealth();
+      console.log('HEALTH STATUS:', health);
       expect(health.connected).toBe(true);
     });
 
     test('should initialize Elasticsearch', async () => {
       const success = await initializeElasticsearch();
+      console.log('INIT SUCCESS:', success);
       expect(success).toBe(true);
     });
   });
@@ -207,7 +237,7 @@ describe('Elasticsearch Configuration', () => {
   describe('Configuration', () => {
     test('should have correct environment configuration', () => {
       // Test that configuration can be loaded
-      const { getElasticsearchConfig } = require('./config');
+      const { getElasticsearchConfig } = require('./config.js');
       const config = getElasticsearchConfig();
       
       expect(config).toHaveProperty('url');
@@ -227,8 +257,9 @@ describe('Elasticsearch Configuration', () => {
       // Test that errors are caught and handled
       try {
         await mockClient.ping();
-      } catch (error) {
-        expect(error.message).toBe('Connection failed');
+      } catch (error: unknown) {
+        const err = error as Error;
+        expect(err.message).toBe('Connection failed');
       }
     });
 
@@ -248,7 +279,7 @@ describe('Elasticsearch Configuration', () => {
 
 describe('Elasticsearch Mappings and Templates', () => {
   test('should have valid subtitles mapping structure', () => {
-    const { subtitlesIndexMapping } = require('./mappings');
+    const { subtitlesIndexMapping } = require('./mappings.js');
     
     expect(subtitlesIndexMapping).toHaveProperty('mappings');
     expect(subtitlesIndexMapping).toHaveProperty('settings');
@@ -264,14 +295,14 @@ describe('Elasticsearch Mappings and Templates', () => {
   });
 
   test('should have English analyzer configuration', () => {
-    const { subtitlesIndexMapping } = require('./mappings');
+    const { subtitlesIndexMapping } = require('./mappings.js');
     
     expect(subtitlesIndexMapping.settings.analysis).toHaveProperty('analyzer');
     expect(subtitlesIndexMapping.settings.analysis.analyzer).toHaveProperty('english');
   });
 
   test('should have performance optimizations', () => {
-    const { subtitlesIndexMapping } = require('./mappings');
+    const { subtitlesIndexMapping } = require('./mappings.js');
     
     expect(subtitlesIndexMapping.settings.number_of_shards).toBe(3);
     expect(subtitlesIndexMapping.settings.number_of_replicas).toBe(1);

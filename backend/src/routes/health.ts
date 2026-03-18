@@ -3,7 +3,7 @@ import { Router, Request, Response } from 'express';
 const router = Router();
 
 // Basic health check
-router.get('/', (req: Request, res: Response): void => {
+router.get('/', (_req: Request, res: Response): void => {
   res.status(200).json({
     status: 'OK',
     timestamp: new Date().toISOString(),
@@ -13,7 +13,7 @@ router.get('/', (req: Request, res: Response): void => {
 });
 
 // Detailed health check with service status
-router.get('/detailed', async (req: Request, res: Response): Promise<void> => {
+router.get('/detailed', async (_req: Request, res: Response): Promise<void> => {
   const healthStatus = {
     status: 'OK',
     timestamp: new Date().toISOString(),

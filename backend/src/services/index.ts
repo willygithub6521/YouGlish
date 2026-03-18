@@ -8,6 +8,8 @@
 export { VideoService, type VideoServiceOptions } from './VideoService.js';
 export { SearchService, type SearchServiceOptions } from './SearchService.js';
 export { CacheService, type CacheServiceOptions, type CacheStats } from './CacheService.js';
+export { YouTubeApiService, type YouTubeApiServiceOptions } from './YouTubeApiService.js';
+export { YouTubeTranscriptService, type YouTubeTranscriptServiceOptions } from './YouTubeTranscriptService.js';
 
 // Re-export types from other modules for convenience
 export type {
@@ -16,7 +18,8 @@ export type {
   SearchParams,
   SearchResponse,
   SearchResult,
-  Accent
+  Accent,
+  YouTubeVideoData
 } from '../types/index.js';
 
 export type {

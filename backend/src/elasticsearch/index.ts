@@ -3,23 +3,35 @@
  * Provides centralized access to all Elasticsearch functionality
  */
 
-export { default as ElasticsearchConnection } from './config';
-export { createElasticsearchClient, getElasticsearchConfig } from './config';
-export type { ElasticsearchConfig } from './config';
-
-export { ElasticsearchIndexManager } from './indexManager';
-
-export { ElasticsearchSearchService } from './searchService';
-export type { SearchParams, SearchResult, SearchResponse } from './searchService';
-
-export { 
+import ElasticsearchConnection, { createElasticsearchClient, getElasticsearchConfig, type ElasticsearchConfig } from './config.js';
+import { ElasticsearchIndexManager } from './indexManager.js';
+import { ElasticsearchSearchService, type SearchParams, type SearchResult, type SearchResponse } from './searchService.js';
+import { 
   subtitlesIndexMapping, 
   subtitlesIndexTemplate, 
   searchQueryTemplates,
   aggregationQueries,
-  indexLifecyclePolicy
-} from './mappings';
-export type { SubtitleDocument } from './mappings';
+  indexLifecyclePolicy,
+  type SubtitleDocument
+} from './mappings.js';
+
+export {
+  ElasticsearchConnection,
+  createElasticsearchClient,
+  getElasticsearchConfig,
+  type ElasticsearchConfig,
+  ElasticsearchIndexManager,
+  ElasticsearchSearchService,
+  type SearchParams,
+  type SearchResult,
+  type SearchResponse,
+  subtitlesIndexMapping,
+  subtitlesIndexTemplate,
+  searchQueryTemplates,
+  aggregationQueries,
+  indexLifecyclePolicy,
+  type SubtitleDocument
+};
 
 /**
  * Initialize Elasticsearch for the application
@@ -52,8 +64,9 @@ export async function checkElasticsearchHealth(): Promise<any> {
   try {
     const indexManager = new ElasticsearchIndexManager();
     return await indexManager.healthCheck();
-  } catch (error) {
-    console.error('Elasticsearch health check failed:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Elasticsearch health check failed:', err);
     return {
       connected: false,
       indexExists: false,

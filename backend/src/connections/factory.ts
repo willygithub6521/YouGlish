@@ -323,10 +323,10 @@ export class ConnectionFactory {
     // Validate database config
     if (config.database) {
       const db = config.database;
-      if (db.port && (db.port < 1 || db.port > 65535)) {
+      if (db.port !== undefined && (db.port < 1 || db.port > 65535)) {
         errors.push('Database port must be between 1 and 65535');
       }
-      if (db.max && db.min && db.max < db.min) {
+      if (db.max !== undefined && db.min !== undefined && db.max < db.min) {
         errors.push('Database max pool size must be greater than min pool size');
       }
     }
@@ -337,7 +337,7 @@ export class ConnectionFactory {
       if (es.url && !es.url.startsWith('http')) {
         errors.push('Elasticsearch URL must start with http:// or https://');
       }
-      if (es.maxRetries && es.maxRetries < 0) {
+      if (es.maxRetries !== undefined && es.maxRetries < 0) {
         errors.push('Elasticsearch max retries must be non-negative');
       }
     }
@@ -345,10 +345,10 @@ export class ConnectionFactory {
     // Validate Redis config
     if (config.redis) {
       const redis = config.redis;
-      if (redis.port && (redis.port < 1 || redis.port > 65535)) {
+      if (redis.port !== undefined && (redis.port < 1 || redis.port > 65535)) {
         errors.push('Redis port must be between 1 and 65535');
       }
-      if (redis.db && (redis.db < 0 || redis.db > 15)) {
+      if (redis.db !== undefined && (redis.db < 0 || redis.db > 15)) {
         errors.push('Redis database number must be between 0 and 15');
       }
     }

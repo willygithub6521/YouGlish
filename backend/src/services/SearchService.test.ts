@@ -1,44 +1,46 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import { SearchService } from './SearchService.js';
 import type { SearchParams, SearchResponse } from '../types/index.js';
 
 // Mock dependencies
-vi.mock('../elasticsearch/searchService.js', () => ({
-  ElasticsearchSearchService: vi.fn(() => mockElasticsearchService)
+jest.mock('../elasticsearch/searchService.js', () => ({
+  ElasticsearchSearchService: jest.fn(() => mockElasticsearchService)
 }));
 
-vi.mock('../connections/index.js', () => ({
-  getRedisConnection: vi.fn(() => mockRedisConnection)
+jest.mock('../connections/index.js', () => ({
+  getRedisConnection: jest.fn(() => mockRedisConnection)
 }));
 
-vi.mock('../redis/cacheService.js', () => ({
-  CacheService: vi.fn(() => mockCacheService)
+jest.mock('../redis/cacheService.js', () => ({
+  CacheService: jest.fn(() => mockCacheService)
 }));
 
-vi.mock('../utils/logger.js', () => ({
-  createLogger: vi.fn(() => ({
-    debug: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn()
+jest.mock('../utils/logger.js', () => ({
+  createLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn()
   }))
 }));
 
 // Mock objects
-const mockRedisConnection = {};
+const mockRedisConnection = {
+  getConnection: jest.fn().mockReturnValue({})
+};
 
 const mockElasticsearchService = {
-  searchSubtitles: vi.fn(),
-  getSuggestions: vi.fn(),
-  searchExactPhrase: vi.fn(),
-  getSearchStats: vi.fn()
+  searchSubtitles: jest.fn(),
+  getSuggestions: jest.fn(),
+  searchExactPhrase: jest.fn(),
+  getSearchStats: jest.fn()
 };
 
 const mockCacheService = {
-  get: vi.fn(),
-  set: vi.fn(),
-  invalidate: vi.fn(),
-  exists: vi.fn()
+  get: jest.fn(),
+  set: jest.fn(),
+  invalidate: jest.fn(),
+  exists: jest.fn()
 };
 
 describe('SearchService', () => {
@@ -81,12 +83,12 @@ describe('SearchService', () => {
   };
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
     searchService = new SearchService({ cacheEnabled: true });
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    jest.restoreAllMocks();
   });
 
   describe('search', () => {

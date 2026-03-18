@@ -1,43 +1,32 @@
 import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { BrowserRouter } from 'react-router-dom';
+import AppRouter from './pages/AppRouter.js';
 
-function App() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <h1 className="text-2xl font-bold text-gray-900">
-              YouTube Pronunciation Search
-            </h1>
-          </div>
-        </div>
-      </header>
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Learn English Pronunciation with Real Videos
-          </h2>
-          <p className="text-lg text-gray-600 mb-8">
-            Search for English words and phrases to hear their pronunciation in authentic YouTube videos
-          </p>
-          
-          <div className="max-w-md mx-auto">
-            <div className="flex rounded-lg shadow-sm">
-              <input
-                type="text"
-                className="input-field rounded-r-none"
-                placeholder="Enter a word or phrase..."
-              />
-              <button className="btn-primary rounded-l-none">
-                Search
-              </button>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
-  );
-}
+// ─── React Query client with sensible defaults ───────────────────
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000,         // 1 minute
+      gcTime: 5 * 60 * 1000,        // 5 minutes garbage collection
+      retry: 2,
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
+});
+
+// ─── App root ────────────────────────────────────────────────────
+const App: React.FC = () => (
+  <QueryClientProvider client={queryClient}>
+    <BrowserRouter>
+      <AppRouter />
+    </BrowserRouter>
+    {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+  </QueryClientProvider>
+);
 
 export default App;

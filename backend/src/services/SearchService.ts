@@ -1,4 +1,4 @@
-import { ElasticsearchSearchService, SearchParams as ESSearchParams, SearchResult as ESSearchResult, SearchResponse as ESSearchResponse } from '../elasticsearch/searchService.js';
+import { ElasticsearchSearchService, SearchParams as ESSearchParams, SearchResult as ESSearchResult } from '../elasticsearch/searchService.js';
 import { CacheService } from '../redis/cacheService.js';
 import { getRedisConnection } from '../connections/index.js';
 import { createLogger } from '../utils/logger.js';
@@ -36,8 +36,8 @@ export class SearchService {
 
     this.elasticsearchService = new ElasticsearchSearchService();
     
-    const redisConnection = getRedisConnection();
-    this.cacheService = new CacheService(redisConnection);
+    const redisClient = getRedisConnection();
+    this.cacheService = new CacheService(redisClient.getConnection());
   }
 
   /**
@@ -92,8 +92,9 @@ export class SearchService {
       logger.info(`Search completed: "${query}" (${accent}) - ${response.total} results`);
       return response;
 
-    } catch (error) {
-      logger.error(`Search error for query "${query}":`, error);
+    } catch (err: unknown) {
+      const error = err as Error;
+      logger.error(`Search error for query "${query}":`, error.message);
       throw new Error(`Search failed: ${error.message}`);
     }
   }
@@ -182,8 +183,9 @@ export class SearchService {
       logger.info(`Exact phrase search completed: "${phrase}" - ${response.total} results`);
       return response;
 
-    } catch (error) {
-      logger.error(`Exact phrase search error for "${phrase}":`, error);
+    } catch (err: unknown) {
+      const error = err as Error;
+      logger.error(`Exact phrase search error for "${phrase}":`, error.message);
       throw new Error(`Exact phrase search failed: ${error.message}`);
     }
   }
@@ -225,8 +227,9 @@ export class SearchService {
 
       return processedStats;
 
-    } catch (error) {
-      logger.error('Error getting search stats:', error);
+    } catch (err: unknown) {
+      const error = err as Error;
+      logger.error('Error getting search stats:', error.message);
       throw new Error(`Failed to get search stats: ${error.message}`);
     }
   }

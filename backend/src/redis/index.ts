@@ -11,34 +11,29 @@
  */
 
 // Core Redis functionality
-export { RedisConnection, RedisConfig, getRedisConfig } from './config';
-export { CacheService, CacheOptions } from './cacheService';
-export { RedisClient, redisClient } from './client';
+// Core Redis functionality
+export { getRedisConfig } from './config.js';
+export type { RedisConnection, RedisConfig } from './config.js';
+export { CacheService } from './cacheService.js';
+export type { CacheOptions } from './cacheService.js';
+export { RedisClient, redisClient } from './client.js';
 
 // Cache key management
-export { 
-  CacheKeys, 
-  TTL_POLICIES, 
-  CACHE_CONFIG,
+export { CacheKeys, TTL_POLICIES, CACHE_CONFIG } from './cacheKeys.js';
+export type {
   SearchCacheKey,
   VideoMetadataCacheKey,
   VideoSubtitlesCacheKey,
   SuggestionsCacheKey,
   Accent
-} from './cacheKeys';
+} from './cacheKeys.js';
 
 // Specialized cache services
-export { 
-  SearchCache, 
-  SearchResult, 
-  SearchResponse 
-} from './searchCache';
+export { SearchCache } from './searchCache.js';
+export type { SearchResult, SearchResponse } from './searchCache.js';
 
-export { 
-  VideoCache, 
-  VideoMetadata, 
-  Subtitle 
-} from './videoCache';
+export { VideoCache } from './videoCache.js';
+export type { VideoMetadata, Subtitle } from './videoCache.js';
 
 // Type definitions for external use
 export interface CacheStats {

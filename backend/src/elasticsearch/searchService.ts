@@ -1,7 +1,7 @@
 import { Client } from '@elastic/elasticsearch';
-import ElasticsearchConnection from './config';
-import { ElasticsearchIndexManager } from './indexManager';
-import { searchQueryTemplates, aggregationQueries, SubtitleDocument } from './mappings';
+import ElasticsearchConnection from './config.js';
+import { ElasticsearchIndexManager } from './indexManager.js';
+import { searchQueryTemplates, aggregationQueries, SubtitleDocument } from './mappings.js';
 
 /**
  * Search parameters interface

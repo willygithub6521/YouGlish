@@ -1,70 +1,81 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import { VideoService } from './VideoService.js';
 import type { CreateVideoData, UpdateVideoData, VideoMetadata, Subtitle } from '../types/index.js';
 
 // Mock dependencies
-vi.mock('../connections/index.js', () => ({
-  getDatabaseConnection: vi.fn(() => ({
-    getPool: vi.fn(() => mockPool)
+jest.mock('../connections/index.js', () => ({
+  getDatabaseConnection: jest.fn(() => ({
+    getPool: jest.fn(() => mockPool)
   })),
-  getRedisConnection: vi.fn(() => mockRedisConnection)
+  getRedisConnection: jest.fn(() => mockRedisConnection)
 }));
 
-vi.mock('../elasticsearch/searchService.js', () => ({
-  ElasticsearchSearchService: vi.fn(() => mockElasticsearchService)
+jest.mock('../elasticsearch/searchService.js', () => ({
+  ElasticsearchSearchService: jest.fn(() => mockElasticsearchService)
 }));
 
-vi.mock('../redis/cacheService.js', () => ({
-  CacheService: vi.fn(() => mockCacheService)
+jest.mock('../redis/cacheService.js', () => ({
+  CacheService: jest.fn(() => mockCacheService)
 }));
 
-vi.mock('../utils/logger.js', () => ({
-  createLogger: vi.fn(() => ({
-    debug: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn()
+jest.mock('../utils/logger.js', () => ({
+  createLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn()
   }))
+}));
+
+jest.mock('../database/models/Video.js', () => ({
+  VideoModel: jest.fn(() => mockVideoModel)
+}));
+
+jest.mock('../database/models/Subtitle.js', () => ({
+  SubtitleModel: jest.fn(() => mockSubtitleModel)
 }));
 
 // Mock objects
 const mockPool = {
-  query: vi.fn()
+  query: jest.fn()
 };
 
-const mockRedisConnection = {};
+const mockRedisConnection = {
+  getConnection: jest.fn(() => ({}))
+};
 
 const mockElasticsearchService = {
-  indexSubtitle: vi.fn(),
-  deleteVideoSubtitles: vi.fn()
+  indexSubtitle: jest.fn(),
+  deleteVideoSubtitles: jest.fn(),
+  getSearchStats: jest.fn()
 };
 
 const mockCacheService = {
-  get: vi.fn(),
-  set: vi.fn(),
-  delete: vi.fn(),
-  invalidate: vi.fn(),
-  exists: vi.fn()
+  get: jest.fn(),
+  set: jest.fn(),
+  delete: jest.fn(),
+  invalidate: jest.fn(),
+  exists: jest.fn()
 };
 
 const mockVideoModel = {
-  create: vi.fn(),
-  findById: vi.fn(),
-  update: vi.fn(),
-  delete: vi.fn(),
-  findByAccent: vi.fn(),
-  getCountByAccent: vi.fn(),
-  exists: vi.fn(),
-  findAll: vi.fn(),
-  getTotalCount: vi.fn()
+  create: jest.fn(),
+  findById: jest.fn(),
+  update: jest.fn(),
+  delete: jest.fn(),
+  findByAccent: jest.fn(),
+  getCountByAccent: jest.fn(),
+  exists: jest.fn(),
+  findAll: jest.fn(),
+  getTotalCount: jest.fn()
 };
 
 const mockSubtitleModel = {
-  createBatch: vi.fn(),
-  findByVideoId: vi.fn(),
-  deleteByVideoId: vi.fn(),
-  findWithContext: vi.fn(),
-  findAtTime: vi.fn()
+  createBatch: jest.fn(),
+  findByVideoId: jest.fn(),
+  deleteByVideoId: jest.fn(),
+  findWithContext: jest.fn(),
+  findAtTime: jest.fn()
 };
 
 describe('VideoService', () => {
@@ -91,22 +102,13 @@ describe('VideoService', () => {
   };
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
     
-    // Mock the models by replacing the constructor behavior
-    vi.doMock('../database/models/Video.js', () => ({
-      VideoModel: vi.fn(() => mockVideoModel)
-    }));
-    
-    vi.doMock('../database/models/Subtitle.js', () => ({
-      SubtitleModel: vi.fn(() => mockSubtitleModel)
-    }));
-
     videoService = new VideoService({ cacheEnabled: true });
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    jest.restoreAllMocks();
   });
 
   describe('getVideoMetadata', () => {

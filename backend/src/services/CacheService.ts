@@ -36,8 +36,8 @@ export class CacheService {
       ...options
     };
 
-    const redisConnection = getRedisConnection();
-    this.redisCacheService = new RedisCacheService(redisConnection);
+    const redisClient = getRedisConnection();
+    this.redisCacheService = new RedisCacheService(redisClient.getConnection());
     
     this.stats = {
       hits: 0,

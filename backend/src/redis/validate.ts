@@ -48,13 +48,13 @@ console.log('\n4. Testing service instantiation...');
 const connection = new RedisConnection(config);
 console.log('✅ RedisConnection created');
 
-const cacheService = new CacheService(connection);
+const _cacheService = new CacheService(connection);
 console.log('✅ CacheService created');
 
-const searchCache = new SearchCache(cacheService);
+const _searchCache = new SearchCache(_cacheService);
 console.log('✅ SearchCache created');
 
-const videoCache = new VideoCache(cacheService);
+const _videoCache = new VideoCache(_cacheService);
 console.log('✅ VideoCache created');
 
 // Test 5: Singleton pattern

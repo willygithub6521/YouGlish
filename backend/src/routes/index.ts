@@ -11,7 +11,7 @@ router.use('/videos', videoRoutes);
 router.use('/health', healthRoutes);
 
 // API info endpoint
-router.get('/', (req, res) => {
+router.get('/', (_req, res) => {
   res.json({
     message: 'YouTube Pronunciation Search API',
     version: '1.0.0',

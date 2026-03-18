@@ -1,5 +1,93 @@
 import request from 'supertest';
-import express from 'express';
+import { jest } from '@jest/globals';
+
+// ────────────────────────────────────────────────────────────────
+// Mock all external service dependencies before importing app
+// ────────────────────────────────────────────────────────────────
+
+const mockSearchServiceInstance = {
+  search: jest.fn().mockResolvedValue({
+    results: [],
+    total: 0,
+    query: 'hello',
+    accent: 'ALL',
+    accentCounts: { ALL: 0, US: 0, UK: 0, AU: 0, CA: 0, OTHER: 0 }
+  }),
+  getSuggestions: jest.fn().mockResolvedValue([]),
+  searchExactPhrase: jest.fn().mockResolvedValue({
+    results: [],
+    total: 0,
+    query: 'hello',
+    accent: 'ALL',
+    accentCounts: { ALL: 0, US: 0, UK: 0, AU: 0, CA: 0, OTHER: 0 }
+  }),
+  getSearchStats: jest.fn().mockResolvedValue({
+    totalDocuments: 0,
+    accentCounts: {},
+    uniqueVideos: 0,
+    avgDuration: 0
+  }),
+  invalidateSearchCache: jest.fn().mockResolvedValue(undefined),
+  getHealthStatus: jest.fn().mockResolvedValue({ elasticsearch: true, cache: true })
+};
+
+jest.mock('./services/SearchService.js', () => ({
+  SearchService: jest.fn(() => mockSearchServiceInstance)
+}));
+
+jest.mock('./connections/index.js', () => ({
+  getDatabaseConnection: jest.fn(() => ({
+    getPool: jest.fn(() => ({
+      query: jest.fn().mockResolvedValue({ rows: [], rowCount: 0 })
+    }))
+  })),
+  getRedisConnection: jest.fn(() => ({
+    getConnection: jest.fn(() => ({
+      connect: jest.fn().mockResolvedValue({}),
+      get: jest.fn().mockResolvedValue(null),
+      set: jest.fn().mockResolvedValue('OK'),
+      setEx: jest.fn().mockResolvedValue('OK'),
+      del: jest.fn().mockResolvedValue(1),
+      keys: jest.fn().mockResolvedValue([])
+    }))
+  }))
+}));
+
+jest.mock('./services/VideoService.js', () => ({
+  VideoService: jest.fn(() => ({
+    getVideoMetadata: jest.fn().mockResolvedValue({
+      id: 'dQw4w9WgXcQ',
+      title: 'Test Video',
+      channelName: 'Test Channel',
+      duration: 212,
+      accent: 'US',
+      thumbnailUrl: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }),
+    getSubtitles: jest.fn().mockResolvedValue([]),
+    getAllVideos: jest.fn().mockResolvedValue({ videos: [], total: 0 }),
+    getVideosByAccent: jest.fn().mockResolvedValue([]),
+    getSubtitleAtTime: jest.fn().mockResolvedValue(null),
+    getHealthStatus: jest.fn().mockResolvedValue({ database: true, cache: true, search: true })
+  }))
+}));
+
+jest.mock('./elasticsearch/index.js', () => ({
+  checkElasticsearchHealth: jest.fn().mockResolvedValue(true),
+  initializeElasticsearch: jest.fn().mockResolvedValue(true)
+}));
+
+jest.mock('./utils/logger.js', () => ({
+  createLogger: jest.fn(() => ({
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn()
+  }))
+}));
+
+// Import AFTER mocks
 import app from './index.js';
 
 describe('Express Server', () => {
