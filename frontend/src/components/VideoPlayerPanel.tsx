@@ -3,6 +3,7 @@ import VideoPlayer from './VideoPlayer.js';
 import SubtitleDisplay from './SubtitleDisplay.js';
 import ResultNavigator from './ResultNavigator.js';
 import { usePlaybackController } from '../hooks/usePlaybackController.js';
+import useSwipe from '../hooks/useSwipe.js';
 import type { SearchResult } from '../types/index.js';
 
 interface VideoPlayerPanelProps {
@@ -12,10 +13,11 @@ interface VideoPlayerPanelProps {
 }
 
 /**
- * VideoPlayerPanel (Task 10.3 composite)
+ * VideoPlayerPanel (Task 10.3 + Task 15.2)
  *
  * Wires together:
  *  - usePlaybackController  → navigation, auto-play, keyboard
+ *  - useSwipe               → swipe left/right for next/prev (mobile)
  *  - VideoPlayer            → YouTube IFrame embed
  *  - SubtitleDisplay        → highlighted text + context
  *  - ResultNavigator        → prev/next + autoplay toggle
@@ -38,6 +40,14 @@ const VideoPlayerPanel: React.FC<VideoPlayerPanelProps> = ({
     autoPlay: false,
   });
 
+  // ── Swipe gestures (Task 15.2) ───────────────────────────────
+  const swipeRef = useSwipe<HTMLDivElement>({
+    onSwipeLeft: goToNext,
+    onSwipeRight: goToPrevious,
+    enabled: isVisible && results.length > 1,
+    threshold: 50,
+  });
+
   if (!isVisible || results.length === 0 || !currentResult) {
     return null;
   }
@@ -46,6 +56,7 @@ const VideoPlayerPanel: React.FC<VideoPlayerPanelProps> = ({
 
   return (
     <div
+      ref={swipeRef}
       className="flex flex-col gap-4 w-full"
       id="video-player-panel"
       aria-label="Video player panel"

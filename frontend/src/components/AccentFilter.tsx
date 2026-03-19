@@ -25,11 +25,26 @@ const AccentFilter: React.FC<AccentFilterProps> = ({
     .reduce((sum, [, cnt]) => sum + cnt, 0);
 
   return (
+    /*
+     * Mobile: horizontally scrollable strip (no wrap).
+     * Desktop: wraps naturally.
+     * -webkit-overflow-scrolling: touch for inertia on iOS.
+     */
     <div
-      className="flex flex-wrap gap-2"
+      className={[
+        'flex gap-2',
+        // Mobile: single row, horizontal scroll
+        'overflow-x-auto pb-1',
+        // Hide scrollbar while keeping functionality
+        '[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]',
+        // Desktop: allow wrap
+        'sm:flex-wrap sm:overflow-x-visible sm:pb-0',
+      ].join(' ')}
       role="radiogroup"
       aria-label="Filter by accent"
       aria-disabled={disabled}
+      // Snap scrolling for a native-like feel on touch
+      style={{ WebkitOverflowScrolling: 'touch' }}
     >
       {ACCENT_OPTIONS.map(({ value, label, flag }) => {
         const count = value === 'ALL' ? totalCount : (resultCounts[value] ?? 0);
@@ -46,19 +61,24 @@ const AccentFilter: React.FC<AccentFilterProps> = ({
             type="button"
             onClick={() => !disabled && onAccentChange(value)}
             disabled={disabled}
+            // 44px min-height ensures WCAG touch target size
             className={[
-              'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium',
-              'transition-all duration-150 select-none',
+              'flex items-center gap-1.5 px-3 rounded-lg text-sm font-medium',
+              'transition-all duration-150 select-none shrink-0',
+              'min-h-[44px]',          // touch-friendly height
+              'min-w-[4rem]',          // prevent squeezing on narrow screens
               disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
               isSelected
                 ? 'bg-red-500 text-white shadow-sm ring-2 ring-red-300 ring-offset-1'
                 : hasResults
-                ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300'
                 : 'bg-gray-50 text-gray-400 hover:bg-gray-100',
             ].join(' ')}
           >
             <span aria-hidden="true">{flag}</span>
-            <span>{label}</span>
+            {/* Hide long label on very small screens, show on sm+ */}
+            <span className="hidden xs:inline sm:inline">{label}</span>
+            <span className="inline xs:hidden sm:hidden">{value}</span>
             {/* Result count badge */}
             <span
               className={[
@@ -80,3 +100,4 @@ const AccentFilter: React.FC<AccentFilterProps> = ({
 
 export default React.memo(AccentFilter);
 export { ACCENT_OPTIONS };
+
