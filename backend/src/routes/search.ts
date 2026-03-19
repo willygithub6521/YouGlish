@@ -1,11 +1,44 @@
 import { Router, Request, Response, NextFunction } from 'express';
+import rateLimit from 'express-rate-limit';
 import validation from '../middleware/validation.js';
+import { cache } from '../middleware/cacheHeaders.js';
 import { SearchService } from '../services/SearchService.js';
 import { SearchParams } from '../types/index.js';
 import { createLogger } from '../utils/logger.js';
 
 const router = Router();
 const logger = createLogger();
+
+// ── Search-specific rate limiter (stricter than global) ──────────
+// 30 requests per minute per IP for search — prevents scraping
+const searchLimiter = rateLimit({
+  windowMs: 60 * 1000,    // 1 minute
+  max: 30,
+  message: {
+    error: {
+      code: 'SEARCH_RATE_LIMIT',
+      message: 'Too many search requests. Please slow down.',
+    },
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip ?? 'unknown',
+});
+
+// Suggestions can be called more often (debounced on client already)
+const suggestionsLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  message: {
+    error: {
+      code: 'SUGGESTIONS_RATE_LIMIT',
+      message: 'Too many suggestion requests. Please slow down.',
+    },
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip ?? 'unknown',
+});
 
 // Lazy-initialize the service to allow mocking in tests
 let searchService: SearchService | null = null;
@@ -32,6 +65,8 @@ function getSearchService(): SearchService {
  */
 router.get(
   '/',
+  searchLimiter,
+  cache.searchResults,
   validation.validateSearch(),
   validation.handleValidationErrors,
   validation.sanitizeRequest,
@@ -82,6 +117,8 @@ router.get(
  */
 router.get(
   '/suggestions',
+  suggestionsLimiter,
+  cache.suggestions,
   validation.validateSuggestions(),
   validation.handleValidationErrors,
   validation.sanitizeRequest,
@@ -109,6 +146,7 @@ router.get(
  */
 router.get(
   '/stats',
+  cache.stats,
   async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const service = getSearchService();

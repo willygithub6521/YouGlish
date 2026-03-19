@@ -80,4 +80,4 @@ const SubtitleDisplay: React.FC<SubtitleDisplayProps> = ({
   );
 };
 
-export default SubtitleDisplay;
+export default React.memo(SubtitleDisplay);

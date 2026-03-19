@@ -116,6 +116,7 @@ export interface VideoPlayerProps {
   onReady?: () => void;
   onStateChange?: (state: PlayerState) => void;
   onTimeUpdate?: (time: number) => void;
+  onEnded?: () => void;
 }
 
 export interface SubtitleDisplayProps {

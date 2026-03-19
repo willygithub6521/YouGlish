@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { PlayerState } from '../types/index.js';
 
 // ── API loader (singleton) ───────────────────────────────────────
 let apiReady = false;

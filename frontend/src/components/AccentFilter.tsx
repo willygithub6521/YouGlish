@@ -78,5 +78,5 @@ const AccentFilter: React.FC<AccentFilterProps> = ({
   );
 };
 
-export default AccentFilter;
+export default React.memo(AccentFilter);
 export { ACCENT_OPTIONS };

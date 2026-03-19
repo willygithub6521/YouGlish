@@ -1,4 +1,4 @@
-import React from 'react';
+// React is used implicitly via JSX transform
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { renderHook } from '@testing-library/react';
 
@@ -20,13 +20,9 @@ const mockPlayer = {
 };
 
 // Store the onReady/onStateChange callbacks so tests can trigger them
-let capturedEvents: {
-  onReady?: (e: { target: typeof mockPlayer }) => void;
-  onStateChange?: (e: { data: number; target: typeof mockPlayer }) => void;
-} = {};
-
 const MockYTPlayer = jest.fn().mockImplementation((_el, opts) => {
-  capturedEvents = opts.events ?? {};
+  // capture events for potential future use
+  void opts.events;
   return mockPlayer;
 });
 

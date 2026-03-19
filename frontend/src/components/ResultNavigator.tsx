@@ -126,4 +126,4 @@ const ResultNavigator: React.FC<ResultNavigatorProps> = ({
   );
 };
 
-export default ResultNavigator;
+export default React.memo(ResultNavigator);

@@ -3,6 +3,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { BrowserRouter } from 'react-router-dom';
 import AppRouter from './pages/AppRouter.js';
+import ErrorBoundary from './components/ErrorBoundary.js';
+import { ToastProvider } from './components/Toast.js';
 
 // ─── React Query client with sensible defaults ───────────────────
 const queryClient = new QueryClient({
@@ -21,12 +23,16 @@ const queryClient = new QueryClient({
 
 // ─── App root ────────────────────────────────────────────────────
 const App: React.FC = () => (
-  <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <AppRouter />
-    </BrowserRouter>
-    {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <ToastProvider>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <AppRouter />
+        </BrowserRouter>
+        {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+      </QueryClientProvider>
+    </ToastProvider>
+  </ErrorBoundary>
 );
 
 export default App;

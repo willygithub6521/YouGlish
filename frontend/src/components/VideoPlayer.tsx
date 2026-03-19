@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useVideoPlayer } from '../hooks/useVideoPlayer.js';
 import type { VideoPlayerProps, PlayerState } from '../types/index.js';
 
@@ -20,6 +20,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   onReady,
   onStateChange,
   onTimeUpdate,
+  onEnded,
 }) => {
   const {
     containerRef,
@@ -39,6 +40,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       ? (s) => onStateChange(s as unknown as PlayerState)
       : undefined,
     onTimeUpdate,
+    onEnded,
   });
 
   const isPlaying = playerState === 1;
@@ -112,4 +114,4 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   );
 };
 
-export default VideoPlayer;
+export default React.memo(VideoPlayer);
